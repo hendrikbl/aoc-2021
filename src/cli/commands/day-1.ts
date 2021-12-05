@@ -6,6 +6,12 @@ interface CommandOptions {
     input: string
 }
 
+interface Result {
+    inc: number
+    dec: number
+    equal: number
+}
+
 const dayOneCommand: CommandModule = {
     describe: 'Day 1: Sonar Sweep',
     command: 'day-1 <input>',
@@ -17,27 +23,13 @@ const dayOneCommand: CommandModule = {
 
     handler: async (args) => {
         const { input } = (args as unknown) as CommandOptions
-        const data = await readInput(input)
+        const measurements = await readInput(input)
 
-        let inc = 0
-        let dec = 0
-        let equal = 0
-
-        for (let index = 0; index < data.length; index++) {
-            const prev = data[index - 1]
-            const curr = data[index]
-            if (curr > prev) {
-                inc += 1
-            } else if (curr < prev) {
-                dec += 1
-            } else if (curr == prev) {
-                equal += 1
-            }
-        }
-
-        console.log(chalk.red(`${dec}x decreased`))
-        console.log(chalk.green(`${inc}x increased`))
-        console.log(chalk.blue(`${equal}x equal`))
+        console.log(chalk.bold('Part 1'))
+        printResult(partOne(measurements))
+        console.log('\n')
+        console.log(chalk.bold('Part 2'))
+        printResult(partTwo(measurements))
     },
 }
 
@@ -47,6 +39,48 @@ const readInput = async (fPath: string): Promise<number[]> => {
         .toString()
         .split('\n')
         .map((n) => parseInt(n))
+}
+
+const printResult = (res: Result): void => {
+    console.log(chalk.red(`${res.dec}x decreased`))
+    console.log(chalk.green(`${res.inc}x increased`))
+    console.log(chalk.blue(`${res.equal}x equal`))
+}
+
+const partOne = (measurements: number[]): Result => {
+    const res = {
+        inc: 0,
+        dec: 0,
+        equal: 0,
+    }
+
+    for (let index = 0; index < measurements.length; index++) {
+        const prev = measurements[index - 1]
+        const curr = measurements[index]
+        if (curr > prev) {
+            res.inc += 1
+        } else if (curr < prev) {
+            res.dec += 1
+        } else if (curr == prev) {
+            res.equal += 1
+        }
+    }
+
+    return res
+}
+
+const partTwo = (measurements: number[]): Result => {
+    const windows: number[] = []
+
+    for (let index = 0; index < measurements.length - 2; index++) {
+        windows.push(
+            measurements[index] +
+                measurements[index + 1] +
+                measurements[index + 2]
+        )
+    }
+
+    return partOne(windows)
 }
 
 export default dayOneCommand
