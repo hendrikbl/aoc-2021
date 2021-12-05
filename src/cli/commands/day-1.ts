@@ -12,8 +12,10 @@ interface Result {
     equal: number
 }
 
+const title = 'Day 1: Sonar Sweep'
+
 const dayOneCommand: CommandModule = {
-    describe: 'Day 1: Sonar Sweep',
+    describe: title,
     command: 'day-1 <input>',
     builder: (yargs) =>
         yargs.strict().positional('input', {
@@ -25,6 +27,7 @@ const dayOneCommand: CommandModule = {
         const { input } = (args as unknown) as CommandOptions
         const measurements = await readInput(input)
 
+        console.log(chalk.bold(`-- ${title} --\n`))
         console.log(chalk.bold('Part 1'))
         printResult(partOne(measurements))
         console.log('\n')
