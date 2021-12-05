@@ -2,6 +2,7 @@
 
 import * as yargs from 'yargs'
 import dayOneCommand from './commands/day-1'
+import dayThreeCommand from './commands/day-3'
 import dayTwoCommand from './commands/day-2'
 
 export default yargs
@@ -19,4 +20,5 @@ export default yargs
     .wrap(yargs.terminalWidth())
     .command(dayOneCommand)
     .command(dayTwoCommand)
+    .command(dayThreeCommand)
     .demandCommand(1).argv

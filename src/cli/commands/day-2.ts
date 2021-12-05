@@ -37,7 +37,7 @@ class Submarine {
         const horizontal = chalk.blue(chalk.bold('↔') + ' ' + this.horizontal)
         const depth = chalk.cyan(chalk.bold('↕') + ' ' + this.depth)
         const sum = chalk.magenta(
-            chalk.bold('Σ') + ' ' + this.depth * this.horizontal
+            chalk.bold('∏') + ' ' + this.depth * this.horizontal
         )
         console.log(horizontal + ' ' + depth + ' ' + sum)
     }
@@ -71,7 +71,7 @@ const dayTwoCommand: CommandModule = {
     command: 'day-2 <input>',
     builder: (yargs) =>
         yargs.strict().positional('input', {
-            description: 'the sonar sweep report, one measurement per line',
+            description: 'the movement commands, one command per line',
             type: 'string',
         }),
 
@@ -83,7 +83,7 @@ const dayTwoCommand: CommandModule = {
         console.log(chalk.bold('-- Part One --'))
         partOne(movements).print()
         console.log('\n')
-        console.log(chalk.bold('-- Part One --'))
+        console.log(chalk.bold('-- Part Two --'))
         partTwo(movements).print()
     },
 }
