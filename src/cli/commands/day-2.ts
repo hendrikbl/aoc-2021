@@ -43,6 +43,27 @@ class Submarine {
     }
 }
 
+class SubmarineWithAim extends Submarine {
+    aim = 0
+
+    public move(movement: Movement): void {
+        switch (movement.direction) {
+            case 'up':
+                this.aim -= movement.distance
+                break
+            case 'down':
+                this.aim += movement.distance
+                break
+            case 'forward':
+                this.horizontal += movement.distance
+                this.depth += this.aim * movement.distance
+                break
+            default:
+                break
+        }
+    }
+}
+
 const title = 'Day 2: Dive!'
 
 const dayTwoCommand: CommandModule = {
@@ -59,8 +80,11 @@ const dayTwoCommand: CommandModule = {
         const movements = await readInput(input)
 
         console.log(chalk.bold(`-- ${title} --\n`))
-        console.log(chalk.bold('Part 1'))
+        console.log(chalk.bold('-- Part One --'))
         partOne(movements).print()
+        console.log('\n')
+        console.log(chalk.bold('-- Part One --'))
+        partTwo(movements).print()
     },
 }
 
@@ -80,6 +104,14 @@ const readInput = async (fPath: string): Promise<Movement[]> => {
 
 const partOne = (movements: Movement[]): Submarine => {
     const submarine = new Submarine()
+    movements.forEach((movement) => {
+        submarine.move(movement)
+    })
+    return submarine
+}
+
+const partTwo = (movements: Movement[]): SubmarineWithAim => {
+    const submarine = new SubmarineWithAim()
     movements.forEach((movement) => {
         submarine.move(movement)
     })

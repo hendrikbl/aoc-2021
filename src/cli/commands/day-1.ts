@@ -28,10 +28,10 @@ const dayOneCommand: CommandModule = {
         const measurements = await readInput(input)
 
         console.log(chalk.bold(`-- ${title} --\n`))
-        console.log(chalk.bold('Part 1'))
+        console.log(chalk.bold('-- Part One --'))
         printResult(partOne(measurements))
         console.log('\n')
-        console.log(chalk.bold('Part 2'))
+        console.log(chalk.bold('-- Part Two --'))
         printResult(partTwo(measurements))
     },
 }
