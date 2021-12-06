@@ -1,5 +1,6 @@
 import { CommandModule } from 'yargs'
 import chalk from 'chalk'
+import figures from 'figures'
 import filehandle from 'fs/promises'
 
 interface CommandOptions {
@@ -45,9 +46,10 @@ const readInput = async (fPath: string): Promise<number[]> => {
 }
 
 const printResult = (res: Result): void => {
-    console.log(chalk.red(`${res.dec}x decreased`))
-    console.log(chalk.green(`${res.inc}x increased`))
-    console.log(chalk.blue(`${res.equal}x equal`))
+    const desc = chalk.red(chalk.bold(figures.arrowDown) + ' ' + res.dec)
+    const inc = chalk.green(chalk.bold(figures.arrowUp) + ' ' + res.inc)
+    const equal = chalk.blue(chalk.bold('=') + ' ' + res.equal)
+    console.log(`${desc} ${inc} ${equal}`)
 }
 
 const partOne = (measurements: number[]): Result => {
