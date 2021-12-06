@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as yargs from 'yargs'
+import dayFourCommand from './commands/day-4'
 import dayOneCommand from './commands/day-1'
 import dayThreeCommand from './commands/day-3'
 import dayTwoCommand from './commands/day-2'
@@ -21,4 +22,5 @@ export default yargs
     .command(dayOneCommand)
     .command(dayTwoCommand)
     .command(dayThreeCommand)
+    .command(dayFourCommand)
     .demandCommand(1).argv
