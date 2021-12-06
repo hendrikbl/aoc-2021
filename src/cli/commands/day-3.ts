@@ -13,6 +13,11 @@ interface PowerConsumption {
     epsilon: number
 }
 
+interface LifeSupportRating {
+    oxygen: number
+    carbon: number
+}
+
 const title = 'Day 3: Binary Diagnostic'
 
 const dayThreeCommand: CommandModule = {
@@ -32,8 +37,9 @@ const dayThreeCommand: CommandModule = {
         console.log(chalk.bold('-- Part One --'))
         printPowerConsumption(partOne(diagnostics))
 
-        // console.log('\n')
-        // console.log(chalk.bold('-- Part Two --'))
+        console.log('\n')
+        console.log(chalk.bold('-- Part Two --'))
+        printLifeSupportRating(partTwo(diagnostics))
     },
 }
 
@@ -48,7 +54,13 @@ const partOne = (diagnostcs: string[]): PowerConsumption => {
     return { gamma, epsilon }
 }
 
-const getGammaRate = (binaries: string[]): number => {
+const partTwo = (diagnostcs: string[]): LifeSupportRating => {
+    const oxygen = getOxygenRating(diagnostcs)
+    const carbon = getCarbonRating(diagnostcs)
+    return { oxygen, carbon }
+}
+
+const rotateBins = (binaries: string[]): Bit[][] => {
     const rotated: Bit[][] = []
     binaries.forEach((element) => {
         const chars = [...element]
@@ -61,6 +73,16 @@ const getGammaRate = (binaries: string[]): number => {
         })
     })
 
+    return rotated
+}
+
+const invertBits = (input: number): number => {
+    return ~input & (Math.pow(2, input.toString(2).length) - 1)
+}
+
+const getGammaRate = (binaries: string[]): number => {
+    const rotated = rotateBins(binaries)
+
     return parseInt(
         rotated.map((element) => getMostCommon(element)).join(''),
         2
@@ -68,11 +90,10 @@ const getGammaRate = (binaries: string[]): number => {
 }
 
 const getEpsilonRate = (gammaRate: number): number => {
-    const result = ~gammaRate & (Math.pow(2, gammaRate.toString(2).length) - 1)
-    return result
+    return invertBits(gammaRate)
 }
 
-const getMostCommon = (chars: Bit[]): Bit => {
+const getMostCommon = (chars: Bit[], equal: Bit = '0'): Bit => {
     const counts = {}
     chars.forEach((x) => {
         counts[x] = (counts[x] || 0) + 1
@@ -80,16 +101,55 @@ const getMostCommon = (chars: Bit[]): Bit => {
 
     if (counts['1'] > counts['0']) {
         return '1'
-    } else {
+    } else if (counts['1'] < counts['0']) {
         return '0'
-    }
+    } else return equal
 }
 
-const printPowerConsumption = (powerConsumption: PowerConsumption): void => {
-    const gamma = chalk.blue(chalk.bold('γ ') + powerConsumption.gamma)
-    const epsilon = chalk.cyan(chalk.bold('ε ') + powerConsumption.epsilon)
+const getOxygenRating = (binaries: string[]): number => {
+    let temp: string[] = binaries
+    const length = rotateBins(temp).length
+
+    for (let i = 0; i < length; i++) {
+        const rotated = rotateBins(temp)
+        const mostCommon = getMostCommon(rotated[i], '1')
+        temp = temp.filter((bin) => bin[i] == mostCommon)
+        if (temp.length == 1) return parseInt(temp[0], 2)
+    }
+
+    throw Error('no oxygen rating found')
+}
+
+const getCarbonRating = (binaries: string[]): number => {
+    let temp: string[] = binaries
+    const length = rotateBins(temp).length
+
+    for (let i = 0; i < length; i++) {
+        const rotated = rotateBins(temp)
+        const leastCommon = (
+            1 - parseInt(getMostCommon(rotated[i], '1'))
+        ).toString()
+        temp = temp.filter((bin) => bin[i] == leastCommon)
+        if (temp.length == 1) return parseInt(temp[0], 2)
+    }
+
+    throw Error('no oxygen rating found')
+}
+
+const printPowerConsumption = (consumption: PowerConsumption): void => {
+    const gamma = chalk.blue(chalk.bold('γ ') + consumption.gamma)
+    const epsilon = chalk.cyan(chalk.bold('ε ') + consumption.epsilon)
     const product = chalk.magenta(
-        chalk.bold('∏ ') + powerConsumption.gamma * powerConsumption.epsilon
+        chalk.bold('∏ ') + consumption.gamma * consumption.epsilon
+    )
+    console.log(`${gamma} ${epsilon} ${product}`)
+}
+
+const printLifeSupportRating = (rating: LifeSupportRating): void => {
+    const gamma = chalk.blue(chalk.bold('O2 ') + rating.oxygen)
+    const epsilon = chalk.cyan(chalk.bold('CO2 ') + rating.carbon)
+    const product = chalk.magenta(
+        chalk.bold('∏ ') + rating.oxygen * rating.carbon
     )
     console.log(`${gamma} ${epsilon} ${product}`)
 }
