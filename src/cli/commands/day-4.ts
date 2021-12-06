@@ -11,6 +11,7 @@ class BingoGame {
     calls: number[]
     boards: Board[]
     step = 0
+    bingos: Board[] = []
 
     constructor(boards: Board[], calls: number[]) {
         this.boards = boards
@@ -18,16 +19,17 @@ class BingoGame {
     }
 
     public run(): Board[] {
-        while (this.getBingos().length == 0) {
+        while (this.bingos.length == 0) {
             this.runStep()
         }
-        return this.getBingos()
+        return this.bingos
     }
 
     public runStep(): void {
         this.boards.forEach((board) => {
             board.markCells(this.calls[this.step])
         })
+        this.resolveBingos()
         this.step += 1
     }
 
@@ -35,12 +37,28 @@ class BingoGame {
         this.calls.forEach(() => this.runStep())
     }
 
-    public getBingos(): Board[] {
-        const boards: Board[] = []
+    public runUntilLastBingo(): Board[] {
+        while (this.bingos.length < this.boards.length) {
+            this.runStep()
+        }
+        return this.bingos
+    }
+
+    public resolveBingos(): void {
         this.boards.forEach((board) => {
-            if (board.checkBingo()) boards.push(board)
+            if (
+                board.checkBingo() &&
+                !this.bingos.some((bingo) => bingo.id == board.id)
+            ) {
+                this.bingos.push(board)
+            }
         })
-        return boards
+    }
+
+    public reset(): void {
+        this.step = 0
+        this.boards.forEach((board) => board.reset())
+        this.bingos = []
     }
 }
 
@@ -50,9 +68,11 @@ interface Cell {
 }
 
 class Board {
+    id: number
     cells: Cell[][]
 
-    constructor(cells: Cell[][]) {
+    constructor(id: number, cells: Cell[][]) {
+        this.id = id
         this.cells = cells
     }
 
@@ -112,6 +132,12 @@ class Board {
             .map((cell) => cell.value)
             .reduce((a, b) => a + b)
     }
+
+    public reset(): void {
+        this.cells.forEach((row) => {
+            row.forEach((cell) => (cell.marked = false))
+        })
+    }
 }
 
 const title = 'Day 4: Giant Squid'
@@ -132,9 +158,14 @@ const dayFourCommand: CommandModule = {
 
         console.log(chalk.bold(`-- ${title} --\n`))
         console.log(chalk.bold('-- Part One --'))
+        console.log('\n')
         partOne(game)
 
-        // console.log(chalk.bold('-- Part Two --'))
+        game.reset()
+
+        console.log(chalk.bold('-- Part Two --'))
+        console.log('\n')
+        partTwo(game)
     },
 }
 
@@ -143,9 +174,20 @@ const partOne = (game: BingoGame): void => {
     bingos.forEach((board) => {
         board.print()
         console.log('\n')
+        console.log(`Board ${board.id + 1} wins!`)
         printScore(game.calls[game.step - 1], board.getUnmarkedSum())
         console.log('\n')
     })
+}
+
+const partTwo = (game: BingoGame): void => {
+    const bingos = game.runUntilLastBingo()
+    const board = bingos[bingos.length - 1]
+    board.print()
+    console.log('\n')
+    console.log(`Board ${board.id + 1} wins last!`)
+    printScore(game.calls[game.step - 1], board.getUnmarkedSum())
+    console.log('\n')
 }
 
 const readInput = async (fPath: string): Promise<BingoGame> => {
@@ -159,8 +201,11 @@ const readInput = async (fPath: string): Promise<BingoGame> => {
 }
 
 const parseBoards = (boardStr: string[]): Board[] => {
-    return boardStr.map((str) => {
-        return new Board(str.split('\n').map((row) => parseRow(row)))
+    return boardStr.map((str, i) => {
+        return new Board(
+            i,
+            str.split('\n').map((row) => parseRow(row))
+        )
     })
 }
 
