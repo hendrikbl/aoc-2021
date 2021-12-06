@@ -28,9 +28,9 @@ class Diagram {
             ...this.lines.map((line) => [line.start.y, line.end.y]).flat()
         )
 
-        const matrix: number[][] = new Array(maxY + 1).fill(
-            new Array(maxX + 1).fill(0)
-        )
+        const matrix: number[][] = new Array(maxY + 1)
+            .fill(null)
+            .map(() => Array(maxX + 1).fill(0))
 
         this.lines.forEach((line) => {
             line.getPoints().forEach((point) => {
@@ -58,11 +58,15 @@ class Line {
     public getPoints(): Point[] {
         const points: Point[] = []
         if (this.start.x == this.end.x) {
-            for (let i = this.start.y; i <= this.end.y; i++) {
+            const start = this.start.y < this.end.y ? this.start.y : this.end.y
+            const end = this.start.y < this.end.y ? this.end.y : this.start.y
+            for (let i = start; i <= end; i++) {
                 points.push({ x: this.start.x, y: i })
             }
         } else if (this.start.y == this.end.y) {
-            for (let i = this.start.x; i <= this.end.x; i++) {
+            const start = this.start.x < this.end.x ? this.start.x : this.end.x
+            const end = this.start.x < this.end.x ? this.end.x : this.start.x
+            for (let i = start; i <= end; i++) {
                 points.push({ x: i, y: this.start.y })
             }
         }
@@ -102,15 +106,6 @@ const dayFiveCommand: CommandModule = {
 
 const partOne = (lines: Line[]): void => {
     const diagram = new Diagram(lines)
-    console.log(diagram.lines)
-    console.log(diagram.lines[0].getPoints())
-    // console.log(diagram.matrix)
-    // console.log(
-    //     diagram.lines[2].getPoints()[diagram.lines[2].getPoints().length - 1]
-    // )
-    // console.log(diagram.lines[2].start)
-    // console.log(diagram.lines[2].end)
-
     console.log(
         chalk.blue(chalk.bold(figures.cross) + ' ' + diagram.countOverlaps())
     )
