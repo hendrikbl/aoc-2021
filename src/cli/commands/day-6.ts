@@ -4,10 +4,9 @@ import filehandle from 'fs/promises'
 
 interface CommandOptions {
     input: string
-    days: number
 }
 
-class Swarm {
+class SimulatedSchool {
     fishes: Fish[]
 
     constructor(fishes: Fish[]) {
@@ -24,6 +23,42 @@ class Swarm {
                 }
             })
         }
+    }
+
+    public countFishes(): number {
+        return this.fishes.length
+    }
+}
+class FastSchool {
+    0 = 0
+    1 = 0
+    2 = 0
+    3 = 0
+    4 = 0
+    5 = 0
+    6 = 0
+    7 = 0
+    8 = 0
+
+    constructor(fishes: Fish[]) {
+        fishes.forEach((fish) => {
+            this[fish.daysToMultiply] += 1
+        })
+    }
+
+    public passDays(days: number): void {
+        for (let day = 0; day < days; day++) {
+            const numBirths = this[0]
+            for (let i = 0; i < 8; i++) {
+                this[i] = this[i + 1]
+            }
+            this[8] = numBirths
+            this[6] += numBirths
+        }
+    }
+
+    public countFishes(): number {
+        return Object.values(this).reduce((a, b) => a + b)
     }
 }
 
@@ -46,37 +81,34 @@ const daySixCommand: CommandModule = {
     describe: title,
     command: 'day-6 <input>',
     builder: (yargs) =>
-        yargs
-            .strict()
-            .positional('input', {
-                description: 'list of ages, seperated by comma',
-                type: 'string',
-            })
-            .option('days', {
-                alias: 'd',
-                describe: 'days to pass',
-                default: 80,
-            }),
+        yargs.strict().positional('input', {
+            description: 'list of ages, seperated by comma',
+            type: 'string',
+        }),
 
     handler: async (args) => {
-        const { input, days } = (args as unknown) as CommandOptions
-        const fishes = await readInput(input)
-        const swarm = new Swarm(fishes)
+        const { input } = (args as unknown) as CommandOptions
+        const simulatedFishes = await readInput(input)
+        const fastFishes = await readInput(input)
 
         console.log(chalk.bold(`-- ${title} --\n`))
         console.log(chalk.bold('-- Part One --'))
-        partOne(swarm, days)
+        partOne(new SimulatedSchool(simulatedFishes), 80)
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
+        partTwo(new FastSchool(fastFishes), 256)
     },
 }
 
-const partOne = (swarm: Swarm, days: number): void => {
-    swarm.passDays(days)
-    const fishIcon = chalk.bold('🐟')
-    const fishText = chalk.blue(swarm.fishes.length)
-    console.log(`After ${days} days there are ${fishIcon} ${fishText} fishes`)
+const partOne = (school: SimulatedSchool, days: number): void => {
+    school.passDays(days)
+    printResult(school, days)
+}
+
+const partTwo = (school: FastSchool, days: number): void => {
+    school.passDays(days)
+    printResult(school, days)
 }
 
 const readInput = async (fPath: string): Promise<Fish[]> => {
@@ -85,6 +117,15 @@ const readInput = async (fPath: string): Promise<Fish[]> => {
     const fishes: Fish[] = []
     ages.forEach((age) => fishes.push(new Fish(parseInt(age, 10))))
     return fishes
+}
+
+const printResult = (
+    school: SimulatedSchool | FastSchool,
+    days: number
+): void => {
+    const fishIcon = chalk.bold('🐟')
+    const fishText = chalk.blue(school.countFishes())
+    console.log(`After ${days} days there are ${fishIcon} ${fishText} fishes`)
 }
 
 export default daySixCommand
