@@ -11,16 +11,16 @@ class Diagram {
     lines: Line[]
     matrix: number[][]
 
-    constructor(lines: Line[]) {
+    constructor(lines: Line[], diagonals = false) {
         this.lines = lines
-        this.matrix = this.generateMatrix()
+        this.matrix = this.generateMatrix(diagonals)
     }
 
     public countOverlaps(): number {
         return this.matrix.flat().filter((value) => value >= 2).length
     }
 
-    private generateMatrix(): number[][] {
+    private generateMatrix(diagonals = false): number[][] {
         const maxX = Math.max(
             ...this.lines.map((line) => [line.start.x, line.end.x]).flat()
         )
@@ -33,7 +33,7 @@ class Diagram {
             .map(() => Array(maxX + 1).fill(0))
 
         this.lines.forEach((line) => {
-            line.getPoints().forEach((point) => {
+            line.getPoints(diagonals).forEach((point) => {
                 matrix[point.y][point.x] += 1
             })
         })
@@ -55,19 +55,36 @@ class Line {
         this.end = end
     }
 
-    public getPoints(): Point[] {
+    public getPoints(diagonals = false): Point[] {
         const points: Point[] = []
         if (this.start.x == this.end.x) {
-            const start = this.start.y < this.end.y ? this.start.y : this.end.y
-            const end = this.start.y < this.end.y ? this.end.y : this.start.y
-            for (let i = start; i <= end; i++) {
+            const startY = this.start.y < this.end.y ? this.start.y : this.end.y
+            const endY = this.start.y < this.end.y ? this.end.y : this.start.y
+            for (let i = startY; i <= endY; i++) {
                 points.push({ x: this.start.x, y: i })
             }
         } else if (this.start.y == this.end.y) {
-            const start = this.start.x < this.end.x ? this.start.x : this.end.x
-            const end = this.start.x < this.end.x ? this.end.x : this.start.x
-            for (let i = start; i <= end; i++) {
+            const startX = this.start.x < this.end.x ? this.start.x : this.end.x
+            const endX = this.start.x < this.end.x ? this.end.x : this.start.x
+            for (let i = startX; i <= endX; i++) {
                 points.push({ x: i, y: this.start.y })
+            }
+        } else if (diagonals) {
+            const numPoints = Math.abs(this.start.x - this.end.x) + 2
+            let { x, y } = this.start
+            for (let i = 0; i < numPoints - 1; i++) {
+                if (this.start.x > this.end.x) {
+                    x = this.start.x - i
+                } else if (this.start.x < this.end.x) {
+                    x = this.start.x + i
+                }
+                if (this.start.y > this.end.y) {
+                    y = this.start.y - i
+                } else if (this.start.y < this.end.y) {
+                    y = this.start.y + i
+                }
+
+                points.push({ x, y })
             }
         }
         return points
@@ -100,12 +117,19 @@ const dayFiveCommand: CommandModule = {
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
-        console.log('\n')
+        partTwo(lines)
     },
 }
 
 const partOne = (lines: Line[]): void => {
     const diagram = new Diagram(lines)
+    console.log(
+        chalk.blue(chalk.bold(figures.cross) + ' ' + diagram.countOverlaps())
+    )
+}
+
+const partTwo = (lines: Line[]): void => {
+    const diagram = new Diagram(lines, true)
     console.log(
         chalk.blue(chalk.bold(figures.cross) + ' ' + diagram.countOverlaps())
     )
