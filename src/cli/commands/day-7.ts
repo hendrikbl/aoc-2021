@@ -6,6 +6,8 @@ interface CommandOptions {
     input: string
 }
 
+type FuelType = 1 | 2
+
 const title = 'Day 7: The Treachery of Whales'
 
 const daySevenCommand: CommandModule = {
@@ -27,20 +29,18 @@ const daySevenCommand: CommandModule = {
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
+        partTwo(positions)
     },
 }
 
 const partOne = (positions: number[]): void => {
-    const results = getAllCosts(positions)
-    const minFuelCost = Math.min(...results)
-    const optimalPosition = results.findIndex((pos) => pos == minFuelCost)
-    console.log(
-        'The optimal position is ' +
-            chalk.blue.bold(optimalPosition) +
-            ' with a cost of ' +
-            chalk.blue.bold(minFuelCost) +
-            ' fuel'
-    )
+    const results = getAllCosts(positions, 1)
+    printResult(results)
+}
+
+const partTwo = (positions: number[]): void => {
+    const results = getAllCosts(positions, 2)
+    printResult(results)
 }
 
 const readInput = async (fPath: string): Promise<number[]> => {
@@ -57,13 +57,56 @@ const getFuelToPosition = (positions: number[], target: number): number => {
         .reduce((a, b) => a + b)
 }
 
-const getAllCosts = (positions: number[]): number[] => {
+const getExpensiveFuelToPosition = (
+    positions: number[],
+    target: number
+): number => {
+    // VERY SLOW!
+    // return positions
+    //     .map((pos) =>
+    //         [...Array(Math.abs(target - pos) + 1).keys()].reduce(
+    //             (a, b) => a + b
+    //         )
+    //     )
+    //     .reduce((a, b) => a + b)
+
+    // Also slow, but better
+    return positions
+        .map((pos) => {
+            let res = 0
+            for (let i = 0; i <= Math.abs(target - pos); i++) {
+                res += i
+            }
+            return res
+        })
+        .reduce((a, b) => a + b)
+}
+
+const getAllCosts = (positions: number[], type: FuelType): number[] => {
     const max = Math.max(...positions)
     const min = Math.min(...positions)
     const results: number[] = []
     while (results.length < max) {
-        results.push(getFuelToPosition(positions, min + results.length))
+        if (type == 1) {
+            results.push(getFuelToPosition(positions, min + results.length))
+        } else if (type == 2) {
+            results.push(
+                getExpensiveFuelToPosition(positions, min + results.length)
+            )
+        }
     }
     return results
+}
+
+const printResult = (results: number[]) => {
+    const minFuelCost = Math.min(...results)
+    const optimalPosition = results.findIndex((pos) => pos == minFuelCost)
+    console.log(
+        'The optimal position is ' +
+            chalk.blue.bold(optimalPosition) +
+            ' with a cost of ' +
+            chalk.blue.bold(minFuelCost) +
+            ' fuel'
+    )
 }
 export default daySevenCommand
