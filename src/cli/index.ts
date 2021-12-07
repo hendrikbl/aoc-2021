@@ -4,6 +4,7 @@ import * as yargs from 'yargs'
 import dayFiveCommand from './commands/day-5'
 import dayFourCommand from './commands/day-4'
 import dayOneCommand from './commands/day-1'
+import daySixCommand from './commands/day-6'
 import dayThreeCommand from './commands/day-3'
 import dayTwoCommand from './commands/day-2'
 
@@ -25,4 +26,5 @@ export default yargs
     .command(dayThreeCommand)
     .command(dayFourCommand)
     .command(dayFiveCommand)
+    .command(daySixCommand)
     .demandCommand(1).argv
