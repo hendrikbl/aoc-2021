@@ -6,6 +6,12 @@ interface CommandOptions {
     input: string
 }
 
+interface Digit {
+    x: number
+    y: number
+    value: number
+}
+
 const title = 'Day 9: Smoke Basin'
 
 const dayNineCommand: CommandModule = {
@@ -27,6 +33,7 @@ const dayNineCommand: CommandModule = {
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
+        partTwo(lines)
     },
 }
 
@@ -47,6 +54,60 @@ const partOne = (lines: string[]): void => {
 
     const sum = risks.length + risks.reduce((a, b) => a + b)
     console.log(chalk.blue(chalk.bold('∑ ') + sum))
+}
+
+const partTwo = (input: string[]): void => {
+    const lines = input.map((line) => Array.from(line).map(Number))
+
+    let basins: Digit[][] = []
+
+    lines.forEach((line, y) => {
+        line.forEach((digit, x) => {
+            let newBasin: Digit[] = []
+            const basinsToDelete: number[] = []
+            let foundBasin = false
+
+            if (digit != 9) {
+                basins.forEach((basin, i) => {
+                    if (
+                        (x != 0 &&
+                            basin.some(
+                                (digit) => digit.x == x - 1 && digit.y == y
+                            )) ||
+                        (y != 0 &&
+                            basin.some(
+                                (digit) => digit.x == x && digit.y == y - 1
+                            ))
+                    ) {
+                        basinsToDelete.push(i)
+                        newBasin.push(...basin)
+                        foundBasin = true
+                    }
+                })
+                if (!foundBasin) {
+                    basins.push([{ x, y, value: digit }])
+                } else {
+                    newBasin.push({ x, y, value: digit })
+                }
+            }
+
+            newBasin = newBasin.filter(
+                (digit, i, self) => self.indexOf(digit) == i
+            )
+            basinsToDelete.forEach((toDelete, i) => {
+                basins.splice(toDelete - i, 1)
+            })
+            basins.push(newBasin)
+        })
+    })
+    basins = basins.filter((basin) => basin.length > 0)
+    const result: number = basins
+        .map((basin) => basin.length)
+        .sort((a, b) => a - b)
+        .slice(-3)
+        .reduce((a, b) => a * b)
+
+    console.log(chalk.blue(chalk.bold('∑ ') + result))
 }
 
 const readInput = async (fPath: string): Promise<string[]> => {
