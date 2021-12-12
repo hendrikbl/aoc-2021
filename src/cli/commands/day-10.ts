@@ -6,6 +6,13 @@ interface CommandOptions {
     input: string
 }
 
+interface AnalysisResult {
+    key?: number
+    missing?: string[]
+    expected?: string
+    got?: string
+}
+
 const title = 'Day 10: Syntax Scoring'
 
 const dayTenCommand: CommandModule = {
@@ -27,7 +34,7 @@ const dayTenCommand: CommandModule = {
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
-        // partTwo(lines)
+        partTwo(lines)
     },
 }
 
@@ -41,16 +48,42 @@ const partOne = (lines: string[][]): void => {
     const scores: number[] = []
 
     lines.forEach((line) => {
-        const corruptIndex = findCorrupt(line)
-        const score = errorScore.get(line[corruptIndex])
-        if (corruptIndex != -1 && score != undefined) scores.push(score)
+        const result = findCorrupt(line)
+        if (result.key != -1 && result.got) {
+            const score = errorScore.get(result.got)
+            if (score != undefined) scores.push(score)
+        }
     })
 
     const score = scores.reduce((a, b) => a + b)
     console.log(chalk.blue(chalk.bold('∑ ') + score))
 }
 
-// const partTwo = (input: string[][]): void => {}
+const partTwo = (lines: string[][]): void => {
+    const errorScore: Map<string, number> = new Map()
+    errorScore.set(')', 1)
+    errorScore.set(']', 2)
+    errorScore.set('}', 3)
+    errorScore.set('>', 4)
+
+    const scores: number[] = []
+    lines.forEach((line) => {
+        const result = findCorrupt(line)
+        if (result.missing) {
+            let lineScore = 0
+            result.missing.forEach((char) => {
+                const score = errorScore.get(char)
+                if (score) {
+                    lineScore = lineScore * 5 + score
+                }
+            })
+            scores.push(lineScore)
+        }
+    })
+    const middle = Math.floor(scores.length / 2)
+    const result = scores.sort((a, b) => a - b)
+    console.log(chalk.blue(result[middle]))
+}
 
 const readInput = async (fPath: string): Promise<string[][]> => {
     const buffer = await filehandle.readFile(fPath)
@@ -66,7 +99,7 @@ const readInput = async (fPath: string): Promise<string[][]> => {
     return lines
 }
 
-const findCorrupt = (line: string[]): number => {
+const findCorrupt = (line: string[]): AnalysisResult => {
     const brackets: Map<string, string> = new Map()
 
     brackets.set('(', ')')
@@ -83,10 +116,22 @@ const findCorrupt = (line: string[]): number => {
         } else if (char == brackets.get(temp[temp.length - 1])) {
             temp.splice(temp.length - 1, 1)
         } else if (char != brackets.get(temp[temp.length - 1])) {
-            return i
+            return {
+                key: i,
+                expected: temp[temp.length - 1],
+                got: char,
+            }
+        }
+        if (i == line.length - 1 && temp.length > 0) {
+            return {
+                missing: temp
+                    .map((char) => brackets.get(char))
+                    .filter((char) => char != undefined)
+                    .reverse() as string[],
+            }
         }
     }
-    return -1
+    return { key: -1 }
 }
 
 export default dayTenCommand
