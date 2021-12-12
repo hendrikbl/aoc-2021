@@ -1,4 +1,5 @@
 import { CommandModule } from 'yargs'
+import { tick } from 'figures'
 import chalk from 'chalk'
 import filehandle from 'fs/promises'
 
@@ -23,18 +24,48 @@ const dayElevenCommand: CommandModule = {
 
         console.log(chalk.bold(`-- ${title} --\n`))
         console.log(chalk.bold('-- Part One --'))
-        partOne(lines, 100)
+        partOne(lines)
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
+        partTwo(lines)
     },
 }
 
-const partOne = (input: string[], steps: number): void => {
-    let flashes = 0
+const partOne = (input: string[]): void => {
+    const flashes = getFlashes(input, 100)
+        .flat()
+        .reduce((a, b) => a + b)
+    console.log(chalk.blue(chalk.bold('∑ ') + flashes))
+}
+
+const partTwo = (input: string[]): void => {
+    const flashes = getFlashes(input, -1)
+    console.log(chalk.blue(chalk.bold(tick) + ' ' + flashes.length))
+}
+
+const readInput = async (fPath: string): Promise<string[]> => {
+    const buffer = await filehandle.readFile(fPath)
+    const entries: string[] = []
+
+    buffer
+        .toString()
+        .split('\n')
+        .forEach((line) => {
+            entries.push(line.trim())
+        })
+
+    return entries
+}
+
+const getFlashes = (input: string[], steps: number): number[] => {
+    let actualSteps = steps
+    if (steps == -1) actualSteps = 1
+
+    const flashes: number[] = []
     let lines = input.map((line) => Array.from(line).map(Number))
 
-    for (let i = 0; i < steps; i++) {
+    for (let i = 0; i < actualSteps; i++) {
         lines = lines.map((line) => line.map((digit) => digit + 1))
         let containsTenOrBigger = lines.flat().some((digit) => digit >= 10)
         while (containsTenOrBigger) {
@@ -60,27 +91,14 @@ const partOne = (input: string[], steps: number): void => {
             })
             containsTenOrBigger = lines.flat().some((digit) => digit >= 10)
         }
-        flashes += lines.flat().filter((digit) => digit <= 0).length
+        flashes.push(lines.flat().filter((digit) => digit <= 0).length)
         lines = lines.map((line) =>
             line.map((digit) => (digit <= 0 ? 0 : digit))
         )
+        if (!(flashes[i] == 100) && steps == -1) actualSteps += 1
     }
 
-    console.log(chalk.blue(chalk.bold('∑ ') + flashes))
-}
-
-const readInput = async (fPath: string): Promise<string[]> => {
-    const buffer = await filehandle.readFile(fPath)
-    const entries: string[] = []
-
-    buffer
-        .toString()
-        .split('\n')
-        .forEach((line) => {
-            entries.push(line.trim())
-        })
-
-    return entries
+    return flashes
 }
 
 export default dayElevenCommand
