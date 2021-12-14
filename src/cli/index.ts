@@ -11,6 +11,7 @@ import daySevenCommand from './commands/day-7'
 import daySixCommand from './commands/day-6'
 import dayTenCommand from './commands/day-10'
 import dayThreeCommand from './commands/day-3'
+import dayTwelveCommand from './commands/day-12'
 import dayTwoCommand from './commands/day-2'
 
 export default yargs
@@ -37,4 +38,5 @@ export default yargs
     .command(dayNineCommand)
     .command(dayTenCommand)
     .command(dayElevenCommand)
+    .command(dayTwelveCommand)
     .demandCommand(1).argv
