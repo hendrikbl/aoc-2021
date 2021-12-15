@@ -28,41 +28,20 @@ const dayTwelveCommand: CommandModule = {
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
-        // partTwo(neighbors)
+        partTwo(neighbors)
     },
 }
 
 const partOne = (neighbors: string[][]): void => {
-    const start = 'start'
-    const end = 'end'
-    let paths: string[][] = [[start]]
-
-    let foundAll = false
-
-    while (!foundAll) {
-        let finishedPaths = 0
-        paths.forEach((path, i) => {
-            if (path[path.length - 1] != end) {
-                const possibleNeighbors = validNeighbors(
-                    path,
-                    neighbors[path[path.length - 1]]
-                )
-                possibleNeighbors.forEach((neighbor) => {
-                    paths.push([...path, neighbor])
-                })
-                paths.splice(i, 1)
-            } else {
-                finishedPaths += 1
-            }
-        })
-        paths = paths.filter((path) => path.length != 0)
-        if (paths.length == finishedPaths) foundAll = true
-    }
-
+    const paths = getPaths(neighbors)
     console.log(chalk.blue(chalk.bold(arrowRight) + ' ' + paths.length))
 }
 
-// const partTwo = (input: string[]): void => {}
+const partTwo = (neighbors: string[][]): void => {
+    // very slow but whatever
+    const paths = getPaths(neighbors, true)
+    console.log(chalk.blue(chalk.bold(arrowRight) + ' ' + paths.length))
+}
 
 const readInput = async (fPath: string): Promise<string[][]> => {
     const buffer = await filehandle.readFile(fPath)
@@ -102,6 +81,79 @@ const validNeighbors = (path: string[], neighbors: string[]): string[] => {
     })
 
     return result
+}
+
+const validNeighborsExtended = (
+    path: string[],
+    neighbors: string[],
+    start = 'start',
+    end = 'end'
+): string[] => {
+    const result: string[] = []
+    let foundTwoLower = false
+    const duplicates = path.filter(
+        (cave, i) =>
+            path.indexOf(cave) != i &&
+            cave == cave.toLowerCase() &&
+            cave != start &&
+            cave != end
+    )
+
+    if (duplicates.length > 0) foundTwoLower = true
+
+    neighbors.forEach((neighbor) => {
+        if (
+            (path.indexOf(neighbor) != -1 &&
+                neighbor == neighbor.toUpperCase()) ||
+            path.indexOf(neighbor) == -1 ||
+            (!foundTwoLower &&
+                path.filter((cave) => cave == neighbor).length == 1 &&
+                neighbor != start &&
+                neighbor != end)
+        ) {
+            result.push(neighbor)
+        }
+    })
+
+    return result
+}
+
+const getPaths = (neighbors: string[][], extended = false): string[][] => {
+    const start = 'start'
+    const end = 'end'
+    let paths: string[][] = [[start]]
+
+    let foundAll = false
+
+    while (!foundAll) {
+        let finishedPaths = 0
+        paths.forEach((path, i) => {
+            if (path[path.length - 1] != end) {
+                let possibleNeighbors: string[] = []
+                if (extended) {
+                    possibleNeighbors = validNeighborsExtended(
+                        path,
+                        neighbors[path[path.length - 1]]
+                    )
+                } else {
+                    possibleNeighbors = validNeighbors(
+                        path,
+                        neighbors[path[path.length - 1]]
+                    )
+                }
+                possibleNeighbors.forEach((neighbor) => {
+                    paths.push([...path, neighbor])
+                })
+                paths.splice(i, 1)
+            } else {
+                finishedPaths += 1
+            }
+        })
+        paths = paths.filter((path) => path.length != 0)
+        if (paths.length == finishedPaths) foundAll = true
+    }
+
+    return paths
 }
 
 export default dayTwelveCommand
