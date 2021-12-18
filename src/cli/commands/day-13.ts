@@ -43,7 +43,7 @@ const dayThirteenCommand: CommandModule = {
 
         console.log('\n')
         console.log(chalk.bold('-- Part Two --'))
-        // partTwo(neighbors)
+        partTwo(instruction)
     },
 }
 
@@ -53,7 +53,14 @@ const partOne = (instruction: Instruction): void => {
     console.log(chalk.blue(chalk.bold(tick) + ' ' + dots.length))
 }
 
-// const partTwo = (neighbors: string[][]): void => {}
+const partTwo = (instruction: Instruction): void => {
+    let dots = instruction.dots
+
+    instruction.folds.forEach((f) => {
+        dots = fold(dots, f)
+    })
+    print(dots)
+}
 
 const readInput = async (fPath: string): Promise<Instruction> => {
     const buffer = await filehandle.readFile(fPath)
@@ -114,6 +121,22 @@ const fold = (dots: Dot[], fold: Fold): Dot[] => {
         (dot, i, self) =>
             i == self.findIndex((d) => d.x == dot.x && d.y == dot.y)
     )
+}
+
+const print = (dots: Dot[]): void => {
+    const maxX = Math.max(...dots.map((d) => d.x))
+    const maxY = Math.max(...dots.map((d) => d.y))
+    const display: string[][] = [...Array(maxY + 1)].map((y) =>
+        Array(maxX + 1).fill(chalk.grey('.'))
+    )
+
+    display.forEach((row, y) => {
+        row.forEach((dot, x) => {
+            if (dots.findIndex((d) => d.x == x && d.y == y) != -1)
+                display[y][x] = chalk.blue.bold('#')
+        })
+        console.log(row.join(''))
+    })
 }
 
 export default dayThirteenCommand
